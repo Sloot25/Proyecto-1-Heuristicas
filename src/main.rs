@@ -1,12 +1,14 @@
 mod db;
+mod grafica;
+
 
 use db::CityDB;
+use grafica::Grafica;
 
 fn main(){
     let mut cities = CityDB::new();
     let _ = cities.cargar_datos();
-    for(id, city) in cities.data {
-        println!("ID {} => {:?}", id, city);
-    }
-
+    let mut g = Grafica::new(cities.data, cities);
+    println!("Impresion de distancia Natural {}", g.distanciaNatural(1,7));
+    println!("Impresion de peso {}", g.peso(1,7));
 }

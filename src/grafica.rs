@@ -1,25 +1,41 @@
+
+use crate::db::CityDB;
+
 pub struct Grafica {
-    grafica: [[i64; 1092]; 1092],
+    grafica: [[f64; 1092]; 1092],
+    db: CityDB,
 }
 
 impl Grafica {
-    pub fn new(m: [[i64; 1092]; 1092]) -> Self {
-        Grafica { grafica: m,}
+    pub fn new(m: [[f64; 1092]; 1092], base: CityDB) -> Self {
+        Grafica { grafica: m, db:base, }
     }
 
-    pub fn distanciaNatural(&mut self, u: i64, v: i64) {
-        
+    pub fn distanciaNatural(&mut self, u: i64, v: i64) -> f64{
+        let r = 6373000.0;
+        let c = 2.0 * self.getA(u, v).sqrt().atan2((1.0 - self.getA(u, v)).sqrt());
+        return r * c;
     }
 
-    pub fn distanciaMaxima(&mut self, u: i64, v: i64) {
-        
+    fn getA (&mut self, u: i64, v: i64) -> f64 {
+        let u_tupla = self.db.get_latitude_longitude(u).unwrap();
+        let v_tupla = self.db.get_latitude_longitude(v).unwrap();
+
+        let a = (((v_tupla.0 - u_tupla.0)/2.0).sin()).powf(2.0);
+
+        let b = (((v_tupla.1 - u_tupla.0)/2.0).sin()).powf(2.0);
+
+        return a + (u_tupla.0.cos() * v_tupla.0.cos() * b);
     }
 
-    pub fn peso(&mut self, u: i64, v: i64) {
-        
+    pub fn peso(&mut self, u: i64, v: i64) -> f64 {
+        if self.grafica[u as usize][v as usize] != -1.0 {
+            self.grafica[u as usize][v as usize] = self.distanciaNatural(u, v) * self.db.distanciaMaxima;
+        }
+        return self.grafica[u as usize][v as usize];
     }
 
     pub fn getVecino(&mut self, u: i64) -> i64 {
-        
+        return 2; 
     }
 }
