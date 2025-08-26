@@ -1,5 +1,7 @@
 use rusqlite::{Connection, Result};
 use rusqlite::params;
+use std::boxed::Box;
+
 
 #[derive(Debug)]
 pub struct Cities {
@@ -29,13 +31,19 @@ struct Connections {
 }
 
 pub struct CityDB {
-    pub data: [[f64; 1092]; 1092],
+    pub data: Box<[[f64; 1092]; 1092]>,
+    pub coordenadas: Box<[(f64,f64); 1092]>,
     pub distanciaMaxima: f64,
 }
 
 impl CityDB {
     pub fn new() -> Self {
-        CityDB{ data: [[-1.0;1092];1092], distanciaMaxima: 0.0, }
+        let data = Box::new([[-1.0; 1092]; 1092]);
+        CityDB{
+            data,
+            coordenadas: Box::new([(0.0,0.0); 1092]) ,
+            distanciaMaxima: 0.0,
+        }
     }
 
     pub fn cargar_datos(&mut self) -> Result<()> {
@@ -59,29 +67,20 @@ impl CityDB {
             }
         }
 
+        stmt = conn.prepare("SELECT id, latitude, longitude FROM cities")?;
+        let cities_iter = stmt.query_map([], |row| {
+            Ok((row.get::<_,i64>(0)?, row.get::<_,f64>(1)?, row.get::<_,f64>(2)?))
+        })?;
+        
+        for city in cities_iter {
+            let (id, lat, lon) = city?;
+            self.coordenadas[id as usize] = (lat, lon);
+        }
+        
         Ok(())
     }
 
-    pub fn get_latitude_longitude(&mut self, u: i64) -> Result<(f64, f64)> {
-        let conn = Connection::open("tsp.db")?;
-
-        let mut stmt = conn.prepare("SELECT * FROM cities WHERE id = :id")?;
-        let cities_iter = stmt.query_map(params![u], |row| {
-            Ok(Cities {
-                id: row.get(0)?,
-                name: row.get(1)?,
-                country: row.get(2)?,
-                population: row.get(3)?,
-                latitude: row.get(4)?,
-                longitude: row.get(5)?,
-            })
-        })?;
-        
-        let mut c = Cities::new();
-            
-        for city in cities_iter{
-            c = city?;
-        }
-        Ok((c.latitude, c.longitude))
+    pub fn get_latitude_longitude(&mut self, u: i64) -> (f64, f64) {
+        return self.coordenadas[u as usize];
     }
 }

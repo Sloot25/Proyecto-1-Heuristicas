@@ -1,13 +1,14 @@
 
 use crate::db::CityDB;
+use std::boxed::Box;
 
 pub struct Grafica {
-    grafica: [[f64; 1092]; 1092],
+    grafica: Box<[[f64; 1092]; 1092]>,
     db: CityDB,
 }
 
 impl Grafica {
-    pub fn new(m: [[f64; 1092]; 1092], base: CityDB) -> Self {
+    pub fn new(m: Box<[[f64; 1092]; 1092]>, base: CityDB) -> Self {
         Grafica { grafica: m, db:base, }
     }
 
@@ -18,8 +19,8 @@ impl Grafica {
     }
 
     fn getA (&mut self, u: i64, v: i64) -> f64 {
-        let u_tupla = self.db.get_latitude_longitude(u).unwrap();
-        let v_tupla = self.db.get_latitude_longitude(v).unwrap();
+        let u_tupla = self.db.get_latitude_longitude(u);
+        let v_tupla = self.db.get_latitude_longitude(v);
 
         let a = (((v_tupla.0 - u_tupla.0)/2.0).sin()).powf(2.0);
 
