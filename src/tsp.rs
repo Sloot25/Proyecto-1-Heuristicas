@@ -15,11 +15,12 @@ pub struct Tsp {
     mejor_solucion: f64,
     semilla: i64,
     normalizador: f64,
+    random: StdRng,
 }
 
 impl Tsp {
     pub fn new(temperatura: f64, grafica: Grafica, solucion_actual: Vec<i64>, semilla: i64, normalizador: f64) -> Self {
-
+        let mut rng = StdRng::seed_from_u64(semilla as u64);
         Tsp {
             grafica,
             solucion_actual,
@@ -29,6 +30,7 @@ impl Tsp {
             mejor_solucion: 0.0,
             semilla,
             normalizador,
+            random: rng,
         }
 
         
@@ -45,9 +47,11 @@ impl Tsp {
             let a = self.get_vecino();
             let b = self.get_vecino();
             let ant_sol = self.calcular_solucion();
+            
             let _ = self.intercambiar_ciudades(a, b);
             let new_sol = self.calcular_solucion();
-            if self.calcular_solucion() <= (ant_sol + self.temperatura) {
+                        
+            if self.calcular_solucion() < (ant_sol + self.temperatura) {
                 c = c+1;
                 r = r + new_sol;
                 self.soluciones_aceptadas.push(new_sol);
@@ -66,33 +70,39 @@ impl Tsp {
     }
 
     pub fn calcular_solucion(&mut self) -> f64 {
-        let i: i64 = 0;
-        let j: i64 = 1;
+        let mut i: usize = 0;
+        let mut j: usize = 1;
         let mut res: f64 = 0.0;
-        while j < (self.solucion_actual.len() as i64) {
-            res = res + self.grafica.peso(i, j);
+        
+        while j < self.solucion_actual.len()  {
+            res = res + self.grafica.peso(self.solucion_actual[i], self.solucion_actual[j]);
+            i = i+1;
+            j = j+1;
         }
         return res / self.normalizador;
     }
 
     pub fn generar_primer_solucion(&mut self) {
-        let mut rng = StdRng::seed_from_u64(self.semilla as u64);
-        let i = 0;
-        while i < self.solucion_actual.len()-2 {
-            let k: usize = rng.gen_range(0..self.solucion_actual.len());
-            self.solucion_actual[i] = self.solucion_actual[k];
+
+
+        let mut i: i64 = 0;
+        while i < (self.solucion_actual.len() as i64) {
+            let k: usize = self.random.gen_range(0..self.solucion_actual.len());
+            self.intercambiar_ciudades(i,k as i64);
+            i = i+1;
         }
+
     }
 
     fn intercambiar_ciudades(&mut self, a: i64, b: i64){
-        let temp = a;
-        self.solucion_actual[a as usize] = b;
+        let temp = self.solucion_actual[a as usize];
+        self.solucion_actual[a as usize] = self.solucion_actual[b as usize];
         self.solucion_actual[b as usize] = temp;
     }
 
     fn get_vecino(&mut self) -> i64 {
-        let mut rng = StdRng::seed_from_u64(self.semilla as u64);
-        return self.solucion_actual[rng.gen_range(0..self.solucion_actual.len())];
+        
+        return self.random.gen_range(0..self.solucion_actual.len()) as i64;
     }
 
     pub fn aceptacion_por_umbrales (&mut self) {
@@ -102,6 +112,7 @@ impl Tsp {
         while self.temperatura > e {
             let mut q = f64::MAX;
             while self.promedio <= q {
+
                 q = self.promedio;
                 self.calcular_lote();
             }

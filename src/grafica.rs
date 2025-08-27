@@ -44,9 +44,6 @@ impl Grafica {
         return self.db.data[(u*1093 + v) as usize];
     }
 
-    pub fn getVecino(&mut self, u: i64) -> i64 {
-        return 2; 
-    }
 }
 
 #[cfg(test)]
