@@ -1,15 +1,14 @@
-
+use std::f64::consts::PI;
 use crate::db::CityDB;
 use std::boxed::Box;
 
 pub struct Grafica {
-    grafica: Box<[[f64; 1092]; 1092]>,
     db: CityDB,
 }
 
 impl Grafica {
-    pub fn new(m: Box<[[f64; 1092]; 1092]>, base: CityDB) -> Self {
-        Grafica { grafica: m, db:base, }
+    pub fn new(base: CityDB) -> Self {
+        Grafica {db:base, }
     }
 
     pub fn distanciaNatural(&mut self, u: i64, v: i64) -> f64{
@@ -22,21 +21,67 @@ impl Grafica {
         let u_tupla = self.db.get_latitude_longitude(u);
         let v_tupla = self.db.get_latitude_longitude(v);
 
-        let a = (((v_tupla.0 - u_tupla.0)/2.0).sin()).powf(2.0);
+        let rad = PI/180.0;
+        
+        let u_latitude_radianes = u_tupla.0 * rad;
+        let u_longitude_radianes = u_tupla.1 * rad;
 
-        let b = (((v_tupla.1 - u_tupla.0)/2.0).sin()).powf(2.0);
+        let v_latitude_radianes = v_tupla.0 * rad;
+        let v_longitude_radianes = v_tupla.1 * rad;
+        
+        
+        let a = (((v_latitude_radianes - u_latitude_radianes)/2.0).sin()).powf(2.0);
 
-        return a + (u_tupla.0.cos() * v_tupla.0.cos() * b);
+        let b = (((v_longitude_radianes - u_longitude_radianes)/2.0).sin()).powf(2.0);
+
+        return a + (u_latitude_radianes.cos() * v_latitude_radianes.cos() * b);
     }
 
     pub fn peso(&mut self, u: i64, v: i64) -> f64 {
-        if self.grafica[u as usize][v as usize] != -1.0 {
-            self.grafica[u as usize][v as usize] = self.distanciaNatural(u, v) * self.db.distanciaMaxima;
+        if self.db.data[(u*1093 +  v) as usize] == -1.0 {
+            self.db.data[(u*1093 + v) as usize] = self.distanciaNatural(u, v) * self.db.distanciaMaxima;
         }
-        return self.grafica[u as usize][v as usize];
+        return self.db.data[(u*1093 + v) as usize];
     }
 
     pub fn getVecino(&mut self, u: i64) -> i64 {
         return 2; 
     }
 }
+
+#[cfg(test)]
+mod tests{
+    use super::*;
+    use rand::Rng;
+
+    #[test]
+    fn ok_distanciaNatural(){
+        let mut cities = CityDB::new();
+        let _ = cities.cargar_datos();
+        let mut g = Grafica::new(cities);
+
+        let a1: i64 = 2999396;
+        let a2: i64 = 1158707;
+        
+        assert_eq!(a1, g.distanciaNatural(1,7) as i64);
+        assert_eq!(a1, g.distanciaNatural(7,1) as i64);
+        assert_eq!(a2, g.distanciaNatural(1,9) as i64);
+
+    }
+
+    #[test]
+    fn ok_peso() {
+        let mut cities = CityDB::new();
+        let _ = cities.cargar_datos();
+        let mut g = Grafica::new(cities);
+
+        let a1: f64 = 2999396.229999999982;
+        let a2: f64 = 1158707.310000000055;
+
+        assert_eq!(a1, g.peso(1,7));
+        assert_eq!(a1, g.peso(7,1));
+        assert_eq!(a2, g.peso(1,9));
+        assert_eq!(a2, g.peso(9,1));
+
+    }
+} 
