@@ -16,8 +16,13 @@ impl Solucion {
 
     fn calcular_lote() {
         let mut c: i64 = 0;
+        let mut i: i64 = 0;
         promedio = 0.0;
-        while c 
+        let l: i64 = 100;
+        let l2: i64 = 1 000 000;
+        while c < l || i < l2 {
+            
+        }
     }
 
     fn intercambiar_ciudades(a: i64, b: i64) {
@@ -25,12 +30,17 @@ impl Solucion {
         solucion[a] = b;
         solucion[b] = a;
     }
+
+    fn getVecino() -> i64{
+        return 
+    }
 }
 
 pub struct Tsp {
     db: CityDB,
     soluciones_aceptadas: Vec<f64>,
     solucion_actual: Solucion,
+    
 }
 
 impl Tsp {
