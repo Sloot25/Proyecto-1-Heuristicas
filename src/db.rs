@@ -31,17 +31,16 @@ struct Connections {
 }
 
 pub struct CityDB {
-    pub data: Box<[[f64; 1092]; 1092]>,
-    pub coordenadas: Box<[(f64,f64); 1092]>,
+    pub data: Vec<f64>,
+    pub coordenadas: Vec<(f64, f64)>,
     pub distanciaMaxima: f64,
 }
 
 impl CityDB {
     pub fn new() -> Self {
-        let data = Box::new([[-1.0; 1092]; 1092]);
         CityDB{
-            data,
-            coordenadas: Box::new([(0.0,0.0); 1092]) ,
+            data: vec![-1.0; 1093*1093], 
+            coordenadas: vec![(0.0,0.0); 1093] ,
             distanciaMaxima: 0.0,
         }
     }
@@ -60,8 +59,8 @@ impl CityDB {
 
         for connect in connections_iter {
             let c = connect?;
-            self.data[c.id_city_1 as usize][c.id_city_2 as usize] = c.distance;
-            self.data[c.id_city_2 as usize][c.id_city_1 as usize] = c.distance; // Es dirigida?
+            self.data[(c.id_city_1*1093 + c.id_city_2) as usize] = c.distance;
+            self.data[(c.id_city_2*1093 + c.id_city_1) as usize] = c.distance; // Es dirigida?
             if c.distance > self.distanciaMaxima {
                 self.distanciaMaxima = c.distance;
             }
@@ -82,5 +81,61 @@ impl CityDB {
 
     pub fn get_latitude_longitude(&mut self, u: i64) -> (f64, f64) {
         return self.coordenadas[u as usize];
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rand::Rng;
+
+    
+    #[test]
+    fn constructor_city() {
+        let cities = CityDB::new();
+        let mut rng = rand::thread_rng();
+
+        let r: usize = rng.gen_range(0..cities.data.len());
+        
+        assert_eq!(cities.data[0], -1.0);
+        assert_eq!(cities.data[1092*1093], -1.0);
+        assert_eq!(cities.data[r], -1.0);
+        assert_eq!(cities.coordenadas[0], (0.0,0.0));
+        assert_eq!(cities.distanciaMaxima, 0.0);
+    }
+
+    #[test]
+    fn ok_cargar_datos() {
+        let mut cities = CityDB::new();
+        let _ = cities.cargar_datos();
+
+        let id1 = 1071;
+        let latitude1 = 29.30780000000000029;
+        let longitude1 = 30.83999999999999986;
+        assert_eq!(cities.coordenadas[id1], (latitude1, longitude1));
+        let id = 1055;
+        let latitude = -3.799999999999999823;
+        let longitude = 102.266999999999996;
+        assert_eq!(cities.coordenadas[id], (latitude, longitude));
+        assert_eq!(cities.data[id1*1093 + id], -1.0);
+        let id2 = 1085;
+        assert_eq!(cities.data[id1*1093 + id2], 1347317.290000000037);
+        
+    }
+    
+    #[test]
+    fn ok_get_latitude_longitude(){
+        let mut cities = CityDB::new();
+        let _ = cities.cargar_datos();
+        
+        let id = 1071;
+        let latitude = 29.30780000000000029;
+        let longitude = 30.83999999999999986;
+        assert_eq!(cities.get_latitude_longitude(id), (latitude, longitude));
+
+        let id = 1055;
+        let latitude = -3.799999999999999823;
+        let longitude = 102.266999999999996;
+        assert_eq!(cities.get_latitude_longitude(id), (latitude, longitude));
     }
 }
