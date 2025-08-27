@@ -25,10 +25,11 @@ fn main(){
 
     let normalizador: f64 = args[2].parse().expect("No es un f64");
     
-    let mut tsp = Tsp::new(100000.0, g, numeros, 50, normalizador);
+    let mut tsp = Tsp::new(1000.0, g, numeros, 50, normalizador);
     let _ = tsp.generar_primer_solucion();
     let _ = tsp.aceptacion_por_umbrales();
     println!("Solucion Actual {:?}", tsp.solucion_actual);
     println!("Valor {:?}", tsp.calcular_solucion());
     println!("Soluciones {:?}", tsp.soluciones_aceptadas);
+
 }
