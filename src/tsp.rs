@@ -1,5 +1,3 @@
-
-
 use rand::SeedableRng;
 use rand::Rng;
 use rand::rngs::StdRng;
@@ -12,7 +10,7 @@ pub struct Tsp {
     pub solucion_actual: Vec<i64>,
     temperatura: f64,
     promedio: f64,
-    mejor_solucion: f64,
+    pub mejor_solucion: f64,
     semilla: i64,
     normalizador: f64,
     random: StdRng,
@@ -28,7 +26,7 @@ impl Tsp {
             soluciones_aceptadas: Vec::new(),
             temperatura,
             promedio: 0.0,
-            mejor_solucion: 0.0,
+            mejor_solucion: f64::MAX,
             semilla,
             normalizador,
             random: rng,
@@ -41,7 +39,7 @@ impl Tsp {
         let mut c: i64 = 0;
         let mut r: f64 = 0.0;
         let mut i: i64 = 0;
-        let l = 1000;
+        let l = 50000;
         let l2 = 100000;
         
         while c < l || i < l2 {
@@ -52,16 +50,18 @@ impl Tsp {
             let _ = self.intercambiar_ciudades(a, b);
             let new_sol = self.calcular_solucion();
                         
-            if new_sol <= (ant_sol + self.temperatura) {
+            if new_sol < (ant_sol + self.temperatura) {
                 c = c+1;
                 r = r + new_sol;
                 self.soluciones_aceptadas.push(new_sol);
-                
+
                 println!("Solucion actual {:?}", self.solucion_actual);
                 println!("Valor: {:?}", new_sol);
+                
 
                 if new_sol < self.mejor_solucion {
                     self.mejor_solucion = new_sol;
+
                 }
             } else {
                 self.intercambiar_ciudades(a,b);
@@ -69,7 +69,7 @@ impl Tsp {
             i = i + 1;
         }
 
-        self.promedio = r/(self.soluciones_aceptadas.len() as f64);
+        self.promedio = r/(l as f64);
     }
 
     pub fn calcular_solucion(&mut self) -> f64 {
@@ -119,7 +119,7 @@ impl Tsp {
 
     pub fn aceptacion_por_umbrales (&mut self) {
         let e: f64 = 0.0001;
-        let phi: f64 = 0.83;
+        let mut phi: f64 = 0.8;
         self.promedio = 0.0;
         while self.temperatura > e {
             let mut q = f64::MAX;
@@ -128,7 +128,14 @@ impl Tsp {
                 q = self.promedio;
                 self.calcular_lote();
             }
+            
+            if self.soluciones_aceptadas[self.soluciones_aceptadas.len()-1] < 1.0 || self.temperatura < 50000.0 {
+                phi = 0.93;
+            }
+
             self.temperatura = self.temperatura * phi;
+            
+            println!("Temperatura {}", self.temperatura);
         } 
     }
 

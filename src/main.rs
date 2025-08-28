@@ -21,11 +21,12 @@ fn main(){
 
     let mut g = Grafica::new(cities);
 
-    let mut tsp = Tsp::new(1000.0, g, numeros, 75);
+    let mut tsp = Tsp::new(150000.0, g, numeros, 5);
     let _ = tsp.generar_primer_solucion();
     let _ = tsp.aceptacion_por_umbrales();
     println!("Solucion Actual {:?}", tsp.solucion_actual);
     println!("Valor {:?}", tsp.calcular_solucion());
     println!("Soluciones {:?}", tsp.soluciones_aceptadas);
+    println!("Mejor solucion {}", tsp.mejor_solucion);
 
 }
