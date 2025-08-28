@@ -3,7 +3,7 @@ use crate::db::CityDB;
 use std::boxed::Box;
 
 pub struct Grafica {
-    db: CityDB,
+    pub db: CityDB,
 }
 
 impl Grafica {
@@ -39,8 +39,9 @@ impl Grafica {
 
     pub fn peso(&mut self, u: i64, v: i64) -> f64 {
         if self.db.data[(u*1093 +  v) as usize] == -1.0 {
-            self.db.data[(u*1093 + v) as usize] = self.distanciaNatural(u, v) * self.db.distanciaMaxima;
+            self.db.data[(u*1093 + v) as usize] = self.distanciaNatural(u, v) * self.db.distancias_tsp[self.db.distancias_tsp.len()-1];
         }
+
         return self.db.data[(u*1093 + v) as usize];
     }
 
@@ -50,10 +51,19 @@ impl Grafica {
 mod tests{
     use super::*;
     use rand::Rng;
+    use crate::fs;
+    
+    fn generar_numeros() -> Vec<i64>{
 
+        let contenido = fs::read_to_string("inputs/input-40.tsp".to_string());
+
+        let numeros: Vec<i64> = contenido.expect("No es un entero").trim().split(',').map(|s| s.parse::<i64>().expect("Error al convertir el numero")).collect();
+        return numeros;
+    }
+    
     #[test]
     fn ok_distanciaNatural(){
-        let mut cities = CityDB::new();
+        let mut cities = CityDB::new(&generar_numeros());
         let _ = cities.cargar_datos();
         let mut g = Grafica::new(cities);
 
@@ -68,7 +78,7 @@ mod tests{
 
     #[test]
     fn ok_peso() {
-        let mut cities = CityDB::new();
+        let mut cities = CityDB::new(&generar_numeros());
         let _ = cities.cargar_datos();
         let mut g = Grafica::new(cities);
 
