@@ -21,12 +21,15 @@ fn main(){
 
     let mut g = Grafica::new(cities);
 
-    let mut tsp = Tsp::new(30000.0, g, numeros, 90);
+    let semilla = args[2].parse::<i64>().expect("Error al parsear semilla");
+    
+    let mut tsp = Tsp::new(50000.0, g, numeros, semilla);
     let _ = tsp.generar_primer_solucion();
     let _ = tsp.aceptacion_por_umbrales();
     println!("Solucion Actual {:?}", tsp.solucion_actual);
     println!("Valor {:?}", tsp.calcular_solucion());
     println!("Soluciones {:?}", tsp.soluciones_aceptadas);
     println!("Mejor solucion {}", tsp.mejor_solucion);
+    println!("Semilla {}", semilla);
 
 }
