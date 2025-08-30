@@ -168,7 +168,7 @@ impl Tsp {
         while self.temperatura > e {
             let mut cond = 0;
             let mut q = f64::MAX;
-            while self.promedio <= q && cond < 2{
+            while self.promedio <= q && cond < 4 {
                 q = self.promedio;
                 self.calcular_lote();
                 cond = cond + 1;
