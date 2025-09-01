@@ -30,6 +30,7 @@ struct Connections {
     distance: f64,
 }
 
+#[derive(Clone)]
 pub struct CityDB {
     pub data: Vec<f64>,
     pub coordenadas: Vec<(f64, f64)>,

@@ -2,6 +2,7 @@ use std::f64::consts::PI;
 use crate::db::CityDB;
 use std::boxed::Box;
 
+#[derive(Clone)]
 pub struct Grafica {
     pub db: CityDB,
 }

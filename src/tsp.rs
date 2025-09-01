@@ -15,6 +15,7 @@ pub struct Tsp {
     normalizador: f64,
     random: StdRng,
     pub peso_solucion_actual: f64,
+    pub mejor_solucion_arr: Vec<i64>,
 }
 
 impl Tsp {
@@ -32,6 +33,7 @@ impl Tsp {
             normalizador,
             random: rng,
             peso_solucion_actual: 0.0,
+            mejor_solucion_arr: Vec::new(),
         }
 
         
@@ -54,12 +56,12 @@ impl Tsp {
                 r = r + new_sol;
                 self.soluciones_aceptadas.push(new_sol);
                 self.peso_solucion_actual = new_sol;
-                println!("Solucion actual {:?}", self.solucion_actual);
-                println!("Valor: {:?}", new_sol);
+                //println!("Solucion actual {:?}", self.solucion_actual);
+                //println!("Valor: {:?}", new_sol);
                 
                 if new_sol < self.mejor_solucion {
                     self.mejor_solucion = new_sol;
-
+                    self.mejor_solucion_arr = self.solucion_actual.clone();
                 }
             } else {
                 self.intercambiar_ciudades(a as usize,b as usize);
@@ -180,7 +182,7 @@ impl Tsp {
 
             self.temperatura = self.temperatura * phi;
             
-            println!("Temperatura {}", self.temperatura);
+            //println!("Temperatura {}", self.temperatura);
         } 
     }
 
