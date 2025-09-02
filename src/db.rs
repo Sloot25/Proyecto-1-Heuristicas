@@ -1,29 +1,5 @@
 use rusqlite::{Connection, Result};
-use rusqlite::params;
 
-
-
-#[derive(Debug)]
-pub struct Cities {
-    id: i64,
-    name: String,
-    country: String,
-    population: i64,
-    latitude: f64,
-    longitude: f64,
-}
-impl Cities {
-    pub fn new() -> Self{
-        Cities {
-            id: 0,
-            name: String::new(),
-            country: String::new(),
-            population: 0,
-            latitude: 0.0,
-            longitude: 0.0,
-        }
-    }
-}
 struct Connections {
     id_city_1: i64,
     id_city_2: i64,
@@ -40,7 +16,7 @@ pub struct CityDB {
 
 impl CityDB {
     pub fn new(indices_tsp: &Vec<i64>) -> Self {
-        let mut tsp = Self::cargar_tsp(indices_tsp);
+        let tsp = Self::cargar_tsp(indices_tsp);
         
         CityDB{
             data: vec![-1.0; 1093*1093], 
@@ -117,9 +93,9 @@ mod tests {
     #[test]
     fn constructor_city() {
         let cities = CityDB::new(&generar_numeros());
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
-        let r: usize = rng.gen_range(0..cities.data.len());
+        let r: usize = rng.random_range(0..cities.data.len());
         
         assert_eq!(cities.data[0], -1.0);
         assert_eq!(cities.data[1092*1093], -1.0);

@@ -11,7 +11,6 @@ pub struct Tsp {
     temperatura: f64,
     promedio: f64,
     pub mejor_solucion: f64,
-    semilla: i64,
     normalizador: f64,
     random: StdRng,
     pub peso_solucion_actual: f64,
@@ -20,8 +19,8 @@ pub struct Tsp {
 
 impl Tsp {
     pub fn new(temperatura: f64, grafica: Grafica, solucion_actual: Vec<i64>, semilla: i64) -> Self {
-        let mut rng = StdRng::seed_from_u64(semilla as u64);
-        let mut normalizador = Self::get_normalizador(&grafica.db.distancias_tsp, solucion_actual.len());
+        let rng = StdRng::seed_from_u64(semilla as u64);
+        let normalizador = Self::get_normalizador(&grafica.db.distancias_tsp, solucion_actual.len());
         Tsp {
             grafica,
             solucion_actual,
@@ -29,7 +28,6 @@ impl Tsp {
             temperatura,
             promedio: 0.0,
             mejor_solucion: f64::MAX,
-            semilla,
             normalizador,
             random: rng,
             peso_solucion_actual: 0.0,
@@ -100,7 +98,7 @@ impl Tsp {
     pub fn generar_primer_solucion(&mut self) {
         let mut i: i64 = 0;
         while i < (self.solucion_actual.len() as i64) {
-            let k: usize = self.random.gen_range(0..self.solucion_actual.len());
+            let k: usize = self.random.random_range(0..self.solucion_actual.len());
             self.intercambiar_ciudades(i as usize,k);
             i = i+1;
         }
@@ -157,13 +155,13 @@ impl Tsp {
 
     fn get_vecino(&mut self) -> i64 {
         
-        return self.random.gen_range(0..self.solucion_actual.len()) as i64;
+        return self.random.random_range(0..self.solucion_actual.len()) as i64;
     }
 
     pub fn aceptacion_por_umbrales (&mut self) {
 
         let e: f64 = 0.0001;
-        let mut phi: f64 = 0.9;
+        let phi: f64 = 0.9;
         self.promedio = 0.0;
         self.generar_primer_solucion();
         self.peso_solucion_actual = self.calcular_solucion();
@@ -205,11 +203,11 @@ mod tests {
 
         let _ = cities.cargar_datos();
 
-        let mut g = Grafica::new(cities);
+        let g = Grafica::new(cities);
 
         println!("Arreglo: {:?}", numeros);
 
-        let mut tsp = Tsp::new(1000.0, g, numeros, 75);
+        let tsp = Tsp::new(1000.0, g, numeros, 75);
 
         return tsp;
         

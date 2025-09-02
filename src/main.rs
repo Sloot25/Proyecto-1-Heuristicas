@@ -1,7 +1,7 @@
 mod db;
 mod grafica;
 mod tsp;
-mod generadorSVG;
+mod generador_svg;
 
 use db::CityDB;
 use grafica::Grafica;
@@ -13,8 +13,7 @@ use tsp::Tsp;
 use std::thread;
 use std::io::Write;
 use chrono::Local;
-use std::path::PathBuf;
-use crate::generadorSVG::generar;
+use crate::generador_svg::generar;
 
 fn lanzar_tsp(semilla: i64, g: Grafica, numeros: Vec<i64>, cadena: String) -> std::io::Result<()> {
     let mut tsp = Tsp::new(50000.0, g, numeros, semilla);
@@ -49,7 +48,7 @@ fn main(){
         let numeros: Vec<i64> = contenido.expect("No es un entero").trim().split(',').map(|s| s.trim().parse::<i64>().expect("Error al convertir el numero")).collect();
         let mut cities = CityDB::new(&numeros);
         let _ = cities.cargar_datos();
-        let mut g = Grafica::new(cities);
+        let g = Grafica::new(cities);
         let mut tsp = Tsp::new(50000.0, g, numeros, 0);
         println!("Resultado: {}", tsp.calcular_solucion());
         return;
@@ -66,7 +65,7 @@ fn main(){
 
     let _ = cities.cargar_datos();
 
-    let mut g = Grafica::new(cities);
+    let g = Grafica::new(cities);
 
 
     if args[1] == "-o" {
