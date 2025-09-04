@@ -1,5 +1,3 @@
-
-
 use rand::SeedableRng;
 use rand::Rng;
 use rand::rngs::StdRng;
@@ -12,26 +10,28 @@ pub struct Tsp {
     pub solucion_actual: Vec<i64>,
     temperatura: f64,
     promedio: f64,
-    mejor_solucion: f64,
-    semilla: i64,
+    pub mejor_solucion: f64,
     normalizador: f64,
     random: StdRng,
+    pub peso_solucion_actual: f64,
+    pub mejor_solucion_arr: Vec<i64>,
 }
 
 impl Tsp {
     pub fn new(temperatura: f64, grafica: Grafica, solucion_actual: Vec<i64>, semilla: i64) -> Self {
-        let mut rng = StdRng::seed_from_u64(semilla as u64);
-        let mut normalizador = Self::get_normalizador(&grafica.db.distancias_tsp, solucion_actual.len());
+        let rng = StdRng::seed_from_u64(semilla as u64);
+        let normalizador = Self::get_normalizador(&grafica.db.distancias_tsp, solucion_actual.len());
         Tsp {
             grafica,
             solucion_actual,
             soluciones_aceptadas: Vec::new(),
             temperatura,
             promedio: 0.0,
-            mejor_solucion: 0.0,
-            semilla,
+            mejor_solucion: f64::MAX,
             normalizador,
             random: rng,
+            peso_solucion_actual: 0.0,
+            mejor_solucion_arr: Vec::new(),
         }
 
         
@@ -41,35 +41,33 @@ impl Tsp {
         let mut c: i64 = 0;
         let mut r: f64 = 0.0;
         let mut i: i64 = 0;
-        let l = 1000;
-        let l2 = 100000;
+        let l = 15000;
+        let l2 = 30000;
         
         while c < l || i < l2 {
             let a = self.get_vecino();
             let b = self.get_vecino();
-            let ant_sol = self.calcular_solucion();
-            
-            let _ = self.intercambiar_ciudades(a, b);
-            let new_sol = self.calcular_solucion();
-                        
-            if new_sol <= (ant_sol + self.temperatura) {
+            let new_sol = self.intercambiar_ciudades(a as usize, b as usize);
+                                    
+            if new_sol < (self.peso_solucion_actual + self.temperatura) {
                 c = c+1;
                 r = r + new_sol;
                 self.soluciones_aceptadas.push(new_sol);
+                self.peso_solucion_actual = new_sol;
+                //println!("Solucion actual {:?}", self.solucion_actual);
+                //println!("Valor: {:?}", new_sol);
                 
-                println!("Solucion actual {:?}", self.solucion_actual);
-                println!("Valor: {:?}", new_sol);
-
                 if new_sol < self.mejor_solucion {
                     self.mejor_solucion = new_sol;
+                    self.mejor_solucion_arr = self.solucion_actual.clone();
                 }
             } else {
-                self.intercambiar_ciudades(a,b);
+                self.intercambiar_ciudades(a as usize,b as usize);
             }
             i = i + 1;
         }
 
-        self.promedio = r/(self.soluciones_aceptadas.len() as f64);
+        self.promedio = r/(c as f64);
     }
 
     pub fn calcular_solucion(&mut self) -> f64 {
@@ -82,7 +80,7 @@ impl Tsp {
             i = i+1;
             j = j+1;
         }
-       // res = res + self.grafica.peso(self.solucion_actual[self.solucion_actual.len() - 1], self.solucion_actual[0]);
+
         let s:f64 = res/self.normalizador;
         return s;
     }
@@ -100,35 +98,89 @@ impl Tsp {
     pub fn generar_primer_solucion(&mut self) {
         let mut i: i64 = 0;
         while i < (self.solucion_actual.len() as i64) {
-            let k: usize = self.random.gen_range(0..self.solucion_actual.len());
-            self.intercambiar_ciudades(i,k as i64);
+            let k: usize = self.random.random_range(0..self.solucion_actual.len());
+            self.intercambiar_ciudades(i as usize,k);
             i = i+1;
         }
     }
 
-    fn intercambiar_ciudades(&mut self, a: i64, b: i64){
-        let temp = self.solucion_actual[a as usize];
-        self.solucion_actual[a as usize] = self.solucion_actual[b as usize];
-        self.solucion_actual[b as usize] = temp;
+    fn intercambiar_ciudades(&mut self, a: usize, b: usize) -> f64{
+        let temp = self.solucion_actual[a];
+        let mut solucion = self.peso_solucion_actual;
+
+        solucion = solucion * self.normalizador;
+        
+        if a != 0 && a!= self.solucion_actual.len()-1 {
+            solucion = solucion - self.grafica.peso(self.solucion_actual[a-1], self.solucion_actual[a]);
+            solucion = solucion -  self.grafica.peso(self.solucion_actual[a], self.solucion_actual[a+1]);
+        } else if a != 0 {
+            solucion = solucion - self.grafica.peso(self.solucion_actual[a-1], self.solucion_actual[a]);
+        } else {
+            solucion = solucion -  self.grafica.peso(self.solucion_actual[a], self.solucion_actual[a+1]);
+        }
+
+        if b != 0 && b != self.solucion_actual.len()-1 {
+            solucion = solucion - self.grafica.peso(self.solucion_actual[b-1], self.solucion_actual[b]);
+            solucion = solucion - self.grafica.peso(self.solucion_actual[b], self.solucion_actual[b+1]);
+        } else if b != 0 {
+            solucion = solucion - self.grafica.peso(self.solucion_actual[b-1], self.solucion_actual[b]);
+        } else {
+            solucion = solucion - self.grafica.peso(self.solucion_actual[b], self.solucion_actual[b+1]);
+        }
+        
+        self.solucion_actual[a] = self.solucion_actual[b];
+        self.solucion_actual[b] = temp;
+
+        if a != 0 && a!= self.solucion_actual.len()-1 {
+            solucion = solucion + self.grafica.peso(self.solucion_actual[a-1], self.solucion_actual[a]);
+            solucion = solucion +  self.grafica.peso(self.solucion_actual[a], self.solucion_actual[a+1]);
+        } else if a != 0 {
+            solucion = solucion + self.grafica.peso(self.solucion_actual[a-1], self.solucion_actual[a]);
+        } else {
+            solucion = solucion +  self.grafica.peso(self.solucion_actual[a], self.solucion_actual[a+1]);
+        }
+
+        if b != 0 && b != self.solucion_actual.len()-1 {
+            solucion = solucion + self.grafica.peso(self.solucion_actual[b-1], self.solucion_actual[b]);
+            solucion = solucion + self.grafica.peso(self.solucion_actual[b], self.solucion_actual[b+1]);
+        } else if b != 0 {
+            solucion = solucion + self.grafica.peso(self.solucion_actual[b-1], self.solucion_actual[b]);
+        } else {
+            solucion = solucion + self.grafica.peso(self.solucion_actual[b], self.solucion_actual[b+1]);
+        }
+
+        solucion = solucion/self.normalizador;
+        return solucion;
     }
 
     fn get_vecino(&mut self) -> i64 {
         
-        return self.random.gen_range(0..self.solucion_actual.len()) as i64;
+        return self.random.random_range(0..self.solucion_actual.len()) as i64;
     }
 
     pub fn aceptacion_por_umbrales (&mut self) {
-        let e: f64 = 0.0001;
-        let phi: f64 = 0.83;
-        self.promedio = 0.0;
-        while self.temperatura > e {
-            let mut q = f64::MAX;
-            while self.promedio <= q {
 
+        let e: f64 = 0.0001;
+        let phi: f64 = 0.9;
+        self.promedio = 0.0;
+        self.generar_primer_solucion();
+        self.peso_solucion_actual = self.calcular_solucion();
+        while self.temperatura > e {
+            let mut cond = 0;
+            let mut q = f64::MAX;
+            while self.promedio <= q && cond < 4 {
                 q = self.promedio;
                 self.calcular_lote();
+                cond = cond + 1;
             }
+            
+//            if self.soluciones_aceptadas[self.soluciones_aceptadas.len()-1] < 1.0 || self.temperatura < 50000.0 {
+  //              phi = 0.93;
+    //        }
+
             self.temperatura = self.temperatura * phi;
+            
+            //println!("Temperatura {}", self.temperatura);
         } 
     }
 
@@ -151,11 +203,11 @@ mod tests {
 
         let _ = cities.cargar_datos();
 
-        let mut g = Grafica::new(cities);
+        let g = Grafica::new(cities);
 
         println!("Arreglo: {:?}", numeros);
 
-        let mut tsp = Tsp::new(1000.0, g, numeros, 75);
+        let tsp = Tsp::new(1000.0, g, numeros, 75);
 
         return tsp;
         
@@ -169,6 +221,15 @@ mod tests {
         //let mut tsp = generar_tsp("inputs/input-150.tsp".to_string());
         //assert_eq!(tsp.calcular_solucion(), 6161590.480045998);
         
+    }
+
+    #[test]
+    fn ok_intercambiar_ciudades() {
+        let mut tsp:Tsp = generar_tsp("inputs/input-40.tsp".to_string());
+        let res1 = tsp.calcular_solucion();
+        tsp.peso_solucion_actual = res1;
+        let res = tsp.intercambiar_ciudades(5,20);
+        assert_eq!(tsp.calcular_solucion(), res);
     }
 }
 
