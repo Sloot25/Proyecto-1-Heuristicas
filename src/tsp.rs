@@ -41,14 +41,24 @@ impl Tsp {
         let mut c: i64 = 0;
         let mut r: f64 = 0.0;
         let mut i: i64 = 0;
-        let l = 15000;
-        let l2 = 30000;
+        let l = 8000;
+
+/*        if self.peso_solucion_actual < 1.0 && self.temperatura < 0.5 {
+            l = 7500;
+        }
+
+        if self.peso_solucion_actual < 1.0 && self.temperatura < 0.001 {
+            l = 12500;
+        }
+  */      
         
-        while c < l || i < l2 {
+        //let l2 = 30000;
+        
+        while c < l {
             let a = self.get_vecino();
             let b = self.get_vecino();
             let new_sol = self.intercambiar_ciudades(a as usize, b as usize);
-                                    
+            
             if new_sol < (self.peso_solucion_actual + self.temperatura) {
                 c = c+1;
                 r = r + new_sol;
@@ -162,6 +172,8 @@ impl Tsp {
 
         let e: f64 = 0.0001;
         let phi: f64 = 0.9;
+        let _ = self.temperatura_inicial();
+        //println!("Temp: {}", self.temperatura);
         self.promedio = 0.0;
         self.generar_primer_solucion();
         self.peso_solucion_actual = self.calcular_solucion();
@@ -180,10 +192,100 @@ impl Tsp {
 
             self.temperatura = self.temperatura * phi;
             
-            //println!("Temperatura {}", self.temperatura);
+
         } 
     }
 
+    pub fn barrido(&mut self){
+        self.peso_solucion_actual = self.calcular_solucion();
+        let mut a:usize = 0;
+        while a < self.solucion_actual.len(){
+            let mut i = a+1;
+            while i < self.solucion_actual.len() {
+                let c = self.peso_solucion_actual;
+                let d = self.intercambiar_ciudades(a,i);
+            
+                if d < c {
+                    self.peso_solucion_actual = d;
+                    println!("a: {}, b: {}", a, i);
+                    println!("Solucion Nueva: {:?}", self.solucion_actual);
+                    println!("Peso: {}", self.peso_solucion_actual);
+                    self.barrido();
+                    return;
+                }
+                let _ = self.intercambiar_ciudades(a,i);
+                i+=1;
+            }
+            a+=1;
+        }
+        return;
+    }
+
+
+    fn temperatura_inicial (&mut self) {
+        let porc = 0.88;
+        let t1:f64;
+        let t2:f64;
+        let mut t:f64 = self.temperatura;
+        let mut p = self.porcentajes_aceptados(t);
+        if (porc - p).abs() <= 0.001 {
+            return;
+        }
+        if p < porc {
+            while p < porc {
+                t = t*2.0;
+                p = self.porcentajes_aceptados(t);
+            }
+            t1 = t/2.0;
+            t2 = t;
+        } else {
+            while p > porc {
+                t = t / 2.0;
+                p = self.porcentajes_aceptados(t);
+            }
+            t1 = t;
+            t2 = t*2.0;
+        }
+
+        self.temperatura = self.busqueda_binaria(t1,t2,porc);
+    }
+
+    fn porcentajes_aceptados(&mut self, t:f64) -> f64{
+        let mut c = 0;
+        let mut i = 1;
+        let l = 6000;
+        let s = self.solucion_actual.clone();
+        while i < l {
+            let a = self.get_vecino();
+            let b = self.get_vecino();
+            let new_sol = self.intercambiar_ciudades(a as usize, b as usize);
+            if new_sol <= self.peso_solucion_actual + t {
+                c+=1;
+                self.peso_solucion_actual = new_sol;
+            } else {
+                self.intercambiar_ciudades(a as usize, b as usize);
+            }
+            i+=1;
+        }
+        self.solucion_actual = s;
+        return (c as f64)/(l as f64);
+    }
+
+    fn busqueda_binaria(&mut self, t1:f64, t2:f64, porc:f64) -> f64{
+        let tm = (t1 + t2)/2.0;
+        if t2 - t1 < 0.001 {
+            return tm;
+        }
+        let p = self.porcentajes_aceptados(tm);
+        if (porc - p).abs() < 0.001 {
+            return tm;
+        }
+        if p > porc {
+            return self.busqueda_binaria(t1,tm,porc);
+        }else {
+            return self.busqueda_binaria(tm,t2,porc);
+        }
+    }
 }
 
 #[cfg(test)]
