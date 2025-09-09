@@ -41,18 +41,7 @@ impl Tsp {
         let mut c: i64 = 0;
         let mut r: f64 = 0.0;
         let mut i: i64 = 0;
-        let l = 8000;
-
-/*        if self.peso_solucion_actual < 1.0 && self.temperatura < 0.5 {
-            l = 7500;
-        }
-
-        if self.peso_solucion_actual < 1.0 && self.temperatura < 0.001 {
-            l = 12500;
-        }
-  */      
-        
-        //let l2 = 30000;
+        let l = 6000;
         
         while c < l {
             let a = self.get_vecino();
@@ -171,25 +160,21 @@ impl Tsp {
     pub fn aceptacion_por_umbrales (&mut self) {
 
         let e: f64 = 0.0001;
-        let phi: f64 = 0.9;
+        let phi: f64 = 0.95;
         let _ = self.temperatura_inicial();
         //println!("Temp: {}", self.temperatura);
         self.promedio = 0.0;
         self.generar_primer_solucion();
         self.peso_solucion_actual = self.calcular_solucion();
         while self.temperatura > e {
-            let mut cond = 0;
+            //let mut cond = 0;
             let mut q = f64::MAX;
-            while self.promedio <= q && cond < 4 {
+            while self.promedio <= q {
                 q = self.promedio;
                 self.calcular_lote();
-                cond = cond + 1;
+                //cond = cond + 1;
             }
             
-//            if self.soluciones_aceptadas[self.soluciones_aceptadas.len()-1] < 1.0 || self.temperatura < 50000.0 {
-  //              phi = 0.93;
-    //        }
-
             self.temperatura = self.temperatura * phi;
             
 
@@ -207,9 +192,9 @@ impl Tsp {
             
                 if d < c {
                     self.peso_solucion_actual = d;
-                    println!("a: {}, b: {}", a, i);
-                    println!("Solucion Nueva: {:?}", self.solucion_actual);
-                    println!("Peso: {}", self.peso_solucion_actual);
+                    //println!("a: {}, b: {}", a, i);
+                    //println!("Solucion Nueva: {:?}", self.solucion_actual);
+                    //println!("Peso: {}", self.peso_solucion_actual);
                     self.barrido();
                     return;
                 }
@@ -223,7 +208,7 @@ impl Tsp {
 
 
     fn temperatura_inicial (&mut self) {
-        let porc = 0.88;
+        let porc = 0.65;
         let t1:f64;
         let t2:f64;
         let mut t:f64 = self.temperatura;
@@ -253,7 +238,7 @@ impl Tsp {
     fn porcentajes_aceptados(&mut self, t:f64) -> f64{
         let mut c = 0;
         let mut i = 1;
-        let l = 6000;
+        let l = 2000;
         let s = self.solucion_actual.clone();
         while i < l {
             let a = self.get_vecino();
