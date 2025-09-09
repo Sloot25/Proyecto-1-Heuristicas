@@ -33,7 +33,7 @@ fn lanzar_tsp(semilla: i64, g: Grafica, numeros: Vec<i64>, cadena: String) -> st
     let _  = tsp_mejor.barrido();
     
     println!("Valor {} Semilla {}", tsp_mejor.calcular_solucion(), semilla);
-    let contenido = format!("Soluciones Aceptadas: {:?}\n Solucion Actual {:?}\n Valor: {}\n ArregloMs: {:?} \n Mejor solucion {}\n Semilla: {}", tsp.soluciones_aceptadas, tsp.solucion_actual, tsp.peso_solucion_actual,tsp_mejor.solucion_actual , tsp.mejor_solucion, semilla);
+    let contenido = format!("Soluciones Aceptadas: {:?}\n Solucion Actual {:?}\n Valor: {}\n ArregloMs: {:?} \n Mejor solucion {}\n Semilla: {}", tsp.soluciones_aceptadas, tsp.solucion_actual, tsp.peso_solucion_actual,tsp_mejor.solucion_actual , tsp_mejor.peso_solucion_actual, semilla);
     file.write_all(contenido.as_bytes())?;
     
     Ok(())
