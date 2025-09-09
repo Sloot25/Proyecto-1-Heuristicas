@@ -27,13 +27,13 @@ fn lanzar_tsp(semilla: i64, g: Grafica, numeros: Vec<i64>, cadena: String) -> st
     let ruta = format!("resultados/{}_semilla_{}_{}.txt", cadena,semilla, Local::now().format("%Y-%m-%d_%H-%M-%S") );
     let mut file = File::create(ruta)?;
 
-    let contenido = format!("Soluciones Aceptadas: {:?}\n Solucion Actual {:?}\n Valor: {}\n ArregloMs: {:?} \n Mejor solucion {}\n Semilla: {}", tsp.soluciones_aceptadas, tsp.solucion_actual, tsp.peso_solucion_actual,tsp.mejor_solucion_arr , tsp.mejor_solucion, semilla);
 
     let mut tsp_mejor = Tsp::new(10000.0, g2, tsp.mejor_solucion_arr, semilla);
 
     let _  = tsp_mejor.barrido();
     
     println!("Valor {} Semilla {}", tsp_mejor.calcular_solucion(), semilla);
+    let contenido = format!("Soluciones Aceptadas: {:?}\n Solucion Actual {:?}\n Valor: {}\n ArregloMs: {:?} \n Mejor solucion {}\n Semilla: {}", tsp.soluciones_aceptadas, tsp.solucion_actual, tsp.peso_solucion_actual,tsp_mejor.solucion_actual , tsp.mejor_solucion, semilla);
     file.write_all(contenido.as_bytes())?;
     
     Ok(())
