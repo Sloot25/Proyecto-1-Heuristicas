@@ -41,7 +41,7 @@ impl Tsp {
         let mut c: i64 = 0;
         let mut r: f64 = 0.0;
         let mut i: i64 = 0;
-        let l = 8000;
+        let l = 6000;
         
         while c < l {
             let a = self.get_vecino();
@@ -160,19 +160,19 @@ impl Tsp {
     pub fn aceptacion_por_umbrales (&mut self) {
 
         let e: f64 = 0.0001;
-        let phi: f64 = 0.9;
+        let phi: f64 = 0.95;
         let _ = self.temperatura_inicial();
         //println!("Temp: {}", self.temperatura);
         self.promedio = 0.0;
         self.generar_primer_solucion();
         self.peso_solucion_actual = self.calcular_solucion();
         while self.temperatura > e {
-            let mut cond = 0;
+            //let mut cond = 0;
             let mut q = f64::MAX;
-            while self.promedio <= q && cond < 6{
+            while self.promedio <= q{
                 q = self.promedio;
                 self.calcular_lote();
-                cond = cond + 1;
+                //cond = cond + 1;
             }
             
             self.temperatura = self.temperatura * phi;
@@ -208,7 +208,7 @@ impl Tsp {
 
 
     fn temperatura_inicial (&mut self) {
-        let porc = 0.88;
+        let porc = 0.60;
         let t1:f64;
         let t2:f64;
         let mut t:f64 = self.temperatura;
@@ -238,7 +238,7 @@ impl Tsp {
     fn porcentajes_aceptados(&mut self, t:f64) -> f64{
         let mut c = 0;
         let mut i = 1;
-        let l = 8000;
+        let l = 4000;
         let s = self.solucion_actual.clone();
         while i < l {
             let a = self.get_vecino();
