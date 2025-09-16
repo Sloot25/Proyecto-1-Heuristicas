@@ -9,7 +9,6 @@ use std::fs::File;
 use std::fs;
 use std::env;
 use tsp::Tsp;
-
 use std::thread;
 use std::sync::{Arc, Mutex};
 use std::collections::VecDeque;
@@ -18,7 +17,16 @@ use std::io::Write;
 use chrono::Local;
 use crate::generador_svg::generar;
 
-fn lanzar_tsp(semilla: i64, g: Grafica, numeros: Vec<i64>, cadena: String) -> std::io::Result<()> {
+/// Funcion encargada de correr el algoritmo de tsp.
+///
+/// Los parametros estan dados por:
+/// - semilla:i64 : Semilla la cual será usada en el tsp
+/// - numeros:`Vec<i64>` : Lista de ciudades del TSP.
+/// - cadena:String : Cadena para formatear el nombre del archivo.
+///
+/// La funcion se encarga de lanzar el tsp con la semilla dada, para posteriormente escribir un archivo con los resultados obtenidos.
+/// 
+fn lanzar_tsp(semilla: i64, g: Grafica, numeros: Vec<i64>, cadena: String, svg: bool) -> std::io::Result<()> {
     let g2 = g.clone();
     let mut tsp = Tsp::new(20000.0, g, numeros, semilla);
     let _ = tsp.generar_primer_solucion();
@@ -35,7 +43,11 @@ fn lanzar_tsp(semilla: i64, g: Grafica, numeros: Vec<i64>, cadena: String) -> st
     println!("Valor {} Semilla {}", tsp_mejor.calcular_solucion(), semilla);
     let contenido = format!("Soluciones Aceptadas: {:?}\n Solucion Actual {:?}\n Valor: {}\n ArregloMs: {:?} \n Mejor solucion {}\n Semilla: {}", tsp.soluciones_aceptadas, tsp.solucion_actual, tsp.peso_solucion_actual,tsp_mejor.solucion_actual , tsp_mejor.peso_solucion_actual, semilla);
     file.write_all(contenido.as_bytes())?;
-    
+
+    let nombre_svg = format!("{}_semilla_{}", cadena, semilla);
+    if svg {
+        generar(tsp.soluciones_aceptadas,tsp.soluciones_para_svg, nombre_svg);
+    }
     Ok(())
     
 }
@@ -46,8 +58,8 @@ fn main(){
         let contenido = fs::read_to_string(&args[2]);
         
         let numeros: Vec<f64> = contenido.expect("No es un entero").trim().split(',').map(|s| s.trim().parse::<f64>().expect("Error al convertir el numero")).collect();
-
-        generar(numeros, args[3].clone());
+        let rojos:Vec<(f64, bool)> = Vec::new();
+        generar(numeros, rojos, args[3].clone());
         return;
 
     } else if args.len() > 1 && args[1] == "-b" {
@@ -73,7 +85,7 @@ fn main(){
         println!("Resultado: {}", tsp.calcular_solucion());
         return;
     }else if args.len() < 5 {
-        println!("Los argumentos son: <tipo de consulta> <file> <1er semilla> <2da semilla?> <nombre inicial archivo salida>");
+        println!("Los argumentos son: <tipo de consulta> <file> <1er semilla> <2da semilla?> <nombre inicial archivo salida> <-s?>");
         return;
     }
 
@@ -85,15 +97,19 @@ fn main(){
 
     let _ = cities.cargar_datos();
 
-    println!("Cargada");
-
     let g = Grafica::new(cities);
 
-
+    let mut svg = false;
     if args[1] == "-o" {
+        if args.len() > 5 && args[5] == "-s" {
+            svg = true;
+        }
         let semilla = args[3].parse::<i64>().expect("Error al parsear semilla");
-        lanzar_tsp(semilla, g, numeros, args[4].clone()).unwrap();
+        lanzar_tsp(semilla, g, numeros, args[4].clone(), svg).unwrap();
     } else if args[1] == "-i" {
+        if args.len() > 6 && args[6] == "-s" {
+            svg = true;
+        }
         let num_threads = 6;
         let semilla1 = args[3].parse::<i64>().expect("Error al parsear semilla");
         let semilla2 = args[4].parse::<i64>().expect("Error al parsear semilla");
@@ -102,7 +118,7 @@ fn main(){
         let cola = Arc::new(Mutex::new(semillas_q));
         let mut handles = Vec::new();
 
-        for i in 0..num_threads {
+        for _i in 0..num_threads {
             let cola_2 = Arc::clone(&cola);
             let g_2 = g.clone();
             let numeros_2 = numeros.clone();
@@ -116,7 +132,7 @@ fn main(){
                         semilla_opt = cola_block.pop_front();
                     }
                     if let Some(semilla) = semilla_opt {
-                        lanzar_tsp(semilla, g_2.clone(), numeros_2.clone(), cadena.clone());
+                        let _ = lanzar_tsp(semilla, g_2.clone(), numeros_2.clone(), cadena.clone(), svg);
                     }else {
                         break;
                     }

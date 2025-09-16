@@ -1,0 +1,153 @@
+\input{format.tex}
+
+\author{Vidal Aguilar Diego Jesus}
+\title{Recocido Simulado: TSP}
+\email{vidalaguilardiego@cinecias.unam.mx}
+\universidad{Universidad Nacional Autonoma de México \\ Facultad de Ciencias}
+
+\begin{document}
+\titulo
+
+\begin{multicols}{2}
+
+\resumen{    
+Un abstract tiene típicamente un único párrafo y menos de 250 palabras y debe permitir a los lectores identificar el contenido básico del documento rápida y fielmente, con el fin de determinar la relevancia del mismo para sus intereses y, por tanto, para decidir si necesitan leer el documento en su totalidad. No debe tener citas bibliográficas. Debería responder, entre otras,  a las siguientes preguntas: ¿Por qué se hizo?, ¿Qué hizo?, ¿Cómo  lo hizo?, ¿Cuáles serán los beneficios? (Times New Roman, 10, cursiva) 
+}
+
+
+\section{Introducción}
+
+El trabajo actual consiste en la implementación del recocido simulado para aproximar una solución del problema del TSP, al igual que los resultados encontrados a través de la experimentación con la variación de los parametros como son la temperatura, la velocidad de enfriamento, el valor limite de la temperatura, etc. Con esto se espera poder aproximarse a la mejor solución para la instancia de problema seleccionada o en el mejor de los casos a cualquier instancia.
+
+\section{Problema a Resolver}
+
+El problema del agente viajero o TSP es un problema que consiste en dado un conjunto de ciudades en un mapa. ¿Cuál es el camino más corto que pasa por todas las ciudades?. Para fines de este trabajo es que buscaremos acotar el problema de tal manera que dado un conjunto de ciudades en un mapa, buscamos la trayectoria más corta que pasa por todas ellas.
+
+\section{Desarrollo}
+
+Para estre problema se hizo uso del recocido simulado, el recocido simulado busca emular la técnica metalúrgica de recocido que se utiliza para reducir los defectos en metales. Este algoritmo utiliza un connjunto de posibles soluciones de un problema NP-duro, en el cual puedes usar una función objetivo, una función la cual se encargará de evaluar a la solución.
+
+En nuestro caso, buscamos una función objetivo la cual no solo se encargue de castigar a los caminos que no sean posibles dada nuestra gráfica, si no que buscamos ser capaces de comparar las ciudades que no se encuentran en el mapa, de tal forma que lo que esperamos es que incluso con aquellos recorridos que no sean posibles bajo nuestra gráfica poder notar que la solución esta mejorando, inclusive encontrando menos conexiones inexistentes.
+
+Para lograr esto es que realizamos la función de peso de la siguiente forma.
+
+Sea $G(E,V)$ la gráfica que corresponde al problema del TSP, dado que buscamos poder considerar incluso las aristas que no se encuentran en la gráfica en primer lugar, es por ello que usaremos la gráfica $G_c(E_c, V)$ donde $G_c$ es la gráfica completa.
+
+\[
+  w_s(u,v) =
+  \begin{cases}
+    w(u,v) $ si $ (u,v) \in E \\
+    d(u,v) * max_d(S) $ en otro caso$
+  \end{cases}
+\]
+
+donde $d(u,v)$ es la distancia natural entre dos vértices $u$ y $v$ y $max_d(S)$ es la distancia máxima del conjunto de ciudades que forman nuestro recorrido.
+
+Para este trabajo se tomo la distancia natural como una aproximación de la distancia que existe en la Tierra entre las ciudades y sus coordenadas. Es por ello que definimos la distancia dada por:
+
+\[
+  C = 2 * arctan(\sqrt{A}, \sqrt{1-A})
+\]
+
+Donde A está definido por
+
+\[
+  \begin{aligned}
+  A = sin(\frac{lat(v) - lat(u)}{2})^2 +  \\
+  cos(lat(u)) * cos(lat(v)) * sin(\frac{lon(v) - lon(u)}{2})^2
+  \end{aligned}
+\]
+
+De esta manera es que nuestra función de costo para el recocido simulado hace uso de lo siguiente, dividido entre un Normalizador, el cual nos permita diferenciar las soluciones que tengan todas sus aristas dentro de nuestra solución de las soluciones que no tienen aristas en la solución. El normalizador está definido como la suma de las $n$ aristas de mayor peso en nuestra gráfica. donde $n$ es el tamaño de nuestra solución (el numero de ciudades).
+
+De tal manera que la función de costo es de la siguiente forma:
+
+\[
+  f(P) = \frac{\sum^k_{i=2}w(v_{p(i-1)}, v_{p(i)})}{N(S)}
+\]
+ Donde $N(S)$ es el normalizador. 
+
+ De esta manera es que el recocido simulado se divide en 2, en aceptación por umbrales y calcular los lotes de resultados. Aceptación por umbrales se basa en un algoritmo que recibe como parametros una temperatura y una solución inicial, el cuál entrará en un ciclo y ejecutará el algoritmo de calcularlote hasta que la temperatura llegue a un valor lo suficientemente bajo como para salir de la ejecución.
+
+ Mientras que calcularlote recibe una temperatura y una solucion, por lo que mientras todavia no se ha cumplido el tamaño del lote, nuestro algoritmo comienza a realizar un intercambio de ciudades de manera aleatoria, para ello en cada ejecución intercambia una ciudad, posteriormente revisa si es que la nueva solución es mejor que la actual, si lo es, aceptamos la nueva solución como la solución actual, si no lo es simplemente pasamos a un nuevo par de ciudades.
+
+ Para fines de este trabajo, se realizo la programación de los algoritmos en Rust, de tal manera que el código de esta implementación fue realizado usando Rust buscando hacer uso de las estructuras e implementaciones para simular la programación orientada a objetos.
+
+ Debido a que la implementación de arreglos que tiene Rust no nos permite realizar arreglos de elementos de gran tamaño, es por ello que me vi en la necesidad de hacer uso de vectores, los cuales permiten generar implementaciones de gran tamaño, con la desventaja de que no hay implementacion que cumpla la defición de vector de vectores.
+
+ Es gracias a esto que la implementación de una matriz de adyacencias no es posible en Rust y para realizarla se tuvo que realizar el calculo del polinomio de redireccionamiento completamente a mano para el manejo de las estructuras, debido al encapsulamiento de las operaciones, esto afecto a la generación de la base de datos y a las operaciones correspondiente a la gráfica. 
+ 
+ La implementación se realizó dividiendo el proyecto en 5 modulos principales, los cuales serán los encargados de encapsular toda la lógica del proyecto. Dado que el proyecto es un proyecto pequeño que busca resolver un problema de busco acotar el proyecto lo más posible, es por ello que los 5 modulos se dividen en lo siguiente:
+
+ \begin{itemize}
+
+ \item \textbf{Base de Datos (db.rs)}
+   
+ El modulo db es el encargado de realizar la lectura de la base de datos correspondiente a la información, la cuál se encarga de almacenar y recopilar la mayor parte de la información posible, para ello lo que buscamos almacenar son los datos de las ciudades, para tomar en cuenta las conexiones y los pesos entre las ciudades.
+
+ De la misma manera buscamos almacenar las coordenadas de latitude y longitud correspondientes a cada una de las ciudades, mientras que igualmente almacenamos las distancias entre las ciudades que forman parte de nuestro recorrido.
+
+\item \textbf{Grafica (grafica.rs)}
+
+  El modulo grafica es el encargado de realizar las operaciones de gráfica, debido a que la matriz de adyacencia se encuentra correctamente realizada desde la lectura de los datos y no se buscará modificarla en la medida de lo posible, el modulo como tal unicamente tendrá acceso a esta estructura, en lugar de buscar realizarla nuevamente.
+
+  El modulo grafica al ser realizado unicamente con el objetivo de este proyecto, la unica operación publica que contiene es la de peso, por lo que su unico trabajo es calcular el peso entre dos ciudades, siendo que este sea proporcionado por la base de datos o no lo sea. 
+  
+\item \textbf{TSP (tsp.rs)}
+
+  El modulo TSP es el encargado de realizar las operaciones que le corresponden al recocido simulado, por lo cual además de tener acceso a la gráfica, debemos de almacenar la información que vamos a querer conservar a lo largo de la ejecución del algoritmo.
+
+  Es en esta estructura que nos interesa ser capaces de almacenar la solucion actual y el valor que tiene para no tener que recalcularlo en cada intercambio de ciudades, de ls misma manera nos interesa tener constancia de la mejor solucion que nos hemos encontrado hasta el momento de la iteración, al igual que almacenar la forma de la permutación que tiene la mejor soluciones.
+
+  Almacenamos la temperatura, el promedio, el normalizador y el generador de numeros aleatorios para no tener que moverlos a través de las funciones que componen a nuestro modulo.
+
+  Finalmente es que almacenamos todas aquellas soluciones que fueron aceptadas por nuestro algoritmo, estos datos los mantenemos para poder visualizar el recorrido que realiza nuestro algoritmo para llegar a la solución propuesta, esto lo realizaremos a través del graficador de resultados.
+  
+\item \textbf{Main (main.rs)}
+
+  En el main distribui las distintas opciones para poder realizar el algoritmo, debido a que queremos revisar la mayor cantidad de semillas posibles en el menor tiempo posible, es por ello que separamos la llamada a nuestro algoritmo de recocido en una función aparte.
+
+  Esta función es la encargada de correr el algoritmo de tsp, de escribir el resultado formateado en un archivo y finalmente si queremos, generar un svg.
+
+  Por lo que el main tiene las siguientes opciones, generar un svg (-s), realizar barrido a una solución dada (-b), evaluar una solución (-e), realizar la ejecución del algoritmo con una semilla (-o) y realizar el algoritmo con varias semillas (-i). Siendo este ultimo el cual usa los nucleos para mantener la mayor cantidad posible de procesos corriendo simultaneamente.
+
+\item \textbf{Graficador de resultados (generador\_svg.rs)}
+
+  Finalmente en este modulo de graficador de resultados es el encargado de realizar la gráfica de los resultados obtenidos, para poder visualizar de cierta manera el progreso que hace nuestro algoritmo a lo largo de las temperaturas.
+
+  Debido a que la cantidad de puntos que generan debido a las soluciones aceptadas son demasiados puntos generados, se tuvo que hacer uso de un algoritmo para disminuir los puntos a dibujar, este es rdp, el cual busca simplicar los puntos en un area geometrica capturando en bloques los puntos que se encuentran mas cercanos entre si buscando simplificar sin afectar la interpretación de la gráfica.
+
+  Para posteriormente generar un SVG que contenga la interpretación de los datos con los puntos resultantes y el dibujado de los mejores puntos para identificar la mejora de las soluciones. 
+  
+\end{itemize}
+
+\section{Resultados}
+
+A partir de que el proyecto comenzo a imprimir los resultados, es que se comenzo con la experimentación haciendo variación de los parametros para obtener los resultados. Lo primero que se intento fue bajar el resultado del recorrido de 40 ciudades a un punto que se considerará optimo. 
+
+\section{Trabajos Relacionados}
+
+En esta sección se deben detallar, con sentido crítico, trabajos vinculados realizados y cómo se ha resuelto este problema (o problemas similares) en otros trabajos, si los hubiera. (Times New Roman, 12).
+
+\section{Conclusión y Trabajos Futuros}
+
+Esta sección debe explicitar las limitaciones del trabajo presentado y establecer una discusión sobre los resultados o conclusiones presentadas. Se debe realizar un análisis de los aportes del trabajo frente a otros anteriores si los hubiera. Además, se deben establecer cuestiones abiertas y probables líneas adicionales en el marco de los resultados obtenidos. Los trabajos futuros se deben relacionar con la superación de las limitaciones del trabajo presentado. Muchas veces es, junto con el título, la parte más leída y por lo tanto debe ser de fácil comprensión. (Times New Roman, 12).
+
+\section{Referencias}
+
+Documentación y bibliografía utilizada. Todas las publicaciones citadas deberán incluirse en la lista de referencias. La numeración será secuencial y estará entre corchetes: [1]. Será escrita en fuente (Times New Roman, 10)
+
+\input{bibliography.tex}
+
+Tablas: Las Tablas serán numeradas en forma secuencial (Tabla 1, 2, 3, etc.,) con un titulo descriptivo, ambos escritos en Times New Roman, 10, cursiva. Las tablas estarán centradas en la columna o en caso contrario en toda la página. Los títulos de las columnas de la Tabla estarían en caracteres Times New Roman, 10 negrita.
+
+
+Figuras: Las figuras serán numeradas secuencialmente: Figura 1, 2, 3, etc.).
+Aquellas figuras que abarquen toda la página serán ubicadas al comienzo o al final de la página.
+
+
+Es preferible que los dibujos, fotos, diagramas, etc., se incluyan en blanco y negro. De esta manera, las impresiones monocromáticas, representarán fielmente el documento original.
+
+\end{multicols}
+
+\end{document}
