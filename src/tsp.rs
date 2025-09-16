@@ -235,17 +235,14 @@ impl Tsp {
         let e: f64 = 0.0001;
         let phi: f64 = 0.95;
         let _ = self.temperatura_inicial();
-        //println!("Temp: {}", self.temperatura);
         self.promedio = 0.0;
         self.generar_primer_solucion();
         self.peso_solucion_actual = self.calcular_solucion();
         while self.temperatura > e {
-            //let mut cond = 0;
             let mut q = f64::MAX;
             while self.promedio <= q{
                 q = self.promedio;
                 self.calcular_lote();
-                //cond = cond + 1;
             }
             
             self.temperatura = self.temperatura * phi;

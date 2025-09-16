@@ -11,7 +11,7 @@
 \begin{multicols}{2}
 
 \resumen{    
-Un abstract tiene típicamente un único párrafo y menos de 250 palabras y debe permitir a los lectores identificar el contenido básico del documento rápida y fielmente, con el fin de determinar la relevancia del mismo para sus intereses y, por tanto, para decidir si necesitan leer el documento en su totalidad. No debe tener citas bibliográficas. Debería responder, entre otras,  a las siguientes preguntas: ¿Por qué se hizo?, ¿Qué hizo?, ¿Cómo  lo hizo?, ¿Cuáles serán los beneficios? (Times New Roman, 10, cursiva) 
+El presente trabajo es una implementación de recocido simulado para aproximar soluciones a una instancia del problema del TSP. La implementación corresponde al curso de ``Heuristicas de Optimización Combinatoria'' y fue realizado en Rust. Donde se puede ver la realización del ejecicio y el desarrollo hasta su optimización a la obtención del mejor resultado posible.
 }
 
 
@@ -123,30 +123,191 @@ De tal manera que la función de costo es de la siguiente forma:
 
 \section{Resultados}
 
-A partir de que el proyecto comenzo a imprimir los resultados, es que se comenzo con la experimentación haciendo variación de los parametros para obtener los resultados. Lo primero que se intento fue bajar el resultado del recorrido de 40 ciudades a un punto que se considerará optimo. 
+A partir de que el proyecto comenzo a imprimir los resultados, es que se comenzo con la experimentación haciendo variación de los parametros para obtener los resultados. Lo primero que se intento fue bajar el resultado del recorrido de 40 ciudades a un punto que se considerará optimo.
 
-\section{Trabajos Relacionados}
+De las primeras configuraciones sobre las cuales trabaje fue la siguiente
 
-En esta sección se deben detallar, con sentido crítico, trabajos vinculados realizados y cómo se ha resuelto este problema (o problemas similares) en otros trabajos, si los hubiera. (Times New Roman, 12).
+\begin{itemize}
+\item \textbf{Temperatura:} 50000
+\item \textbf{Lote: } 15000
+\item \textbf{$\phi$: } 0.9
+\end{itemize}
+
+Es bajo esta configuración que con la primer semilla obtengo el resultado que hasta el momento conocemos como el mejor resultado alcanzable, resultado el cual nos provee de la siguiente gráfica:
+
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{../svgs/40_documentable_semilla_1.pdf}
+    \captionof{figure}{Grafica correspondiente a la primer configuracion}
+\end{center}
+
+Siendo que la solucion encontrada corresponde a: $0.3034413264907438$.
+
+Una vez configurado para la instancia de 40 ciudades, se trato con la de 150, obteniendo este resultado: 
+
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{../svgs/150_documentable_semilla_82.pdf}
+    \captionof{figure}{Grafica correspondiente a la primer configuracion para 150 ciudades}
+\end{center}
+
+Siendo que la mejor solución alcanzada en este caso es $0.14021446711368496$ con la semilla 82.
+
+Pero bajar la solución comenzo a volverse cada vez más complicada debido a que los tiempos que toma ejecutar el algoritmo para 15 mil resultados por cada lote es mucho en comparación a otros resultados obtenidos.
+
+Es por ello que lo siguiente es buscar disminuir el numero de lotes generados sin afectar los resultados obtenidos, por lo que la primer manera de intentar realizar esto fue bajar el numero de lotes a 4000 resultados por lote. Pero esto no permitio mejorar mucho los resultados.
+
+Por lo que se probo con la siguiente configuración:
+
+\begin{itemize}
+\item \textbf{Temperatura:} 50000
+\item \textbf{Lote: } 4000
+\item \textbf{$\phi$: } 0.9
+\end{itemize}
+
+De esta manera es que la grafica nos queda de la siguiente manera:
+
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{../svgs/150_documentable_semilla_4.pdf}
+    \captionof{figure}{Grafica correspondiente a la segunda configuracion para 150 ciudades}
+\end{center}
+
+Siendo que la mejor solución alcanzada en este caso es $0.14351238852956927$ con la semilla 4. Para obtener mejores resultados se necesito de un mayor numero de semillas que las 100 con las que se intento, por lo que se modifico aumentando los lotes.
+
+\begin{itemize}
+\item \textbf{Temperatura:} 50000
+\item \textbf{Lote: } 6000
+\item \textbf{$\phi$: } 0.9
+\end{itemize}
+
+De esta manera es que la gráfica resultante nos queda de la siguiente manera:
+
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{../svgs/150_documentable_semilla_60.pdf}
+    \captionof{figure}{Grafica correspondiente a la tercer configuracion para 150 ciudades}
+\end{center}
+
+Siendo que la mejor solución alcanzada en este caso es $0.1494126116684861$ con la semilla 60. De esta forma estamos observando que a pesar de estar aumentando el numero de lotes, esta empeorando la solución obtenida después de hacer el intento con 100 semillas. Siendo de esta manera que después de hacer prueba y error moviendo la temperatura dado que temperaturas muy pequeñas no permiten mejorar los resultados lo suficiente. 
+
+Por lo que, una vez visto esto, se decidió hacer uso de un algoritmo que permita calcular la temperatura basada en el porcentaje de aceptación que queremos para la aceptación en un lote. Haciendo uso de busqueda binaria para el calculo de la temperatura.
+
+Una vez ingresado este, se configuro con el porcentaje de aceptacion a 0.95 y el numero de lotes igual a 6000.
+
+\begin{itemize}
+\item \textbf{Temperatura:} 20000
+\item \textbf{Lote: } 6000
+\item \textbf{$\phi$: } 0.9
+\item \textbf{Algoritmo temperatura Lote: } 6000
+\item \textbf{Algoritmo temperatura porcentaje: } 0.9
+\end{itemize}
+
+De esta manera obtenemos lo siguiente:
+
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{../svgs/150_documentable_semilla_99.pdf}
+    \captionof{figure}{Grafica correspondiente a la quinta configuracion para 150 ciudades}
+\end{center}
+
+Siendo que la mejor solución alcanzada en este caso es $0.14753797072395675$ con la semilla 99. Notamos que los resultados en la gráfica cambiaron, teniendo de esta manera que la figura que surge de la selección de nuestro algoritmo se eleva, dando asi a entender que el algoritmo pierde el tiempo realizando una busqueda en una temperatura demasiado alta.
+
+Por lo que lo siguiente a esto fue disminuir el numero de lotes en el calculo de la temperatura, igualmente disminuir el porcentaje de aceptación. De tal manera que:
+
+\begin{itemize}
+\item \textbf{Temperatura:} 20000
+\item \textbf{Lote: } 6000
+\item \textbf{$\phi$: } 0.9
+\item \textbf{Algoritmo temperatura Lote: } 3000
+\item \textbf{Algoritmo temperatura porcentaje: } 0.65
+\end{itemize}
+
+De esta manera obtenemos lo siguiente:
+
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{../svgs/150_documentable_semilla_175.pdf}
+    \captionof{figure}{Grafica correspondiente a la sexta configuracion para 150 ciudades}
+\end{center}
+
+Siendo que la mejor solución alcanzada en este caso es $0.14756149424092052$ con la semilla 175. Notando de esta manera que la gráfica se aplano, pero aun no podemos conseguir mejorar la solución a pesar de haberlo intentado con 200 semillas. Es por ello que se debe de intentar con mas semillas.
+
+Tratando con mas semillas, podemos encontrar que el mejor resultado obtenido es $0.14122835850399948$, pero aun queremos mejorar los resultados obtenidos.
+
+Para ello debemos de seguir profundizando, por lo que la phi se paso a ser 0.95 para poder seguir profundizando en los resultados.
+
+\begin{itemize}
+\item \textbf{Temperatura:} 20000
+\item \textbf{Lote: } 6000
+\item \textbf{$\phi$: } 0.95
+\item \textbf{Algoritmo temperatura Lote: } 3000
+\item \textbf{Algoritmo temperatura porcentaje: } 0.65
+\end{itemize}
+
+De esta manera obtenemos lo siguiente:
+
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{../svgs/150_documentable_semilla_673.pdf}
+    \captionof{figure}{Grafica correspondiente a la septima configuracion para 150 ciudades}
+\end{center}
+
+
+Siendo que la mejor solución en este caso es $0.1442443419532619$ con la semilla 143. Pero tratando con mas semillas podemos encontrar que el mejor resultado obtenido es $0.14148027872431046$ con la semilla 673.
+
+Pero seguimos esperando mejorar los resultados, dado que la aleatoriedad forma parte del algoritmo, entre mejor sea la semilla, mejor será el resultado obtenido, de ahi que podemos seguir tratando con distintas semillas y veremos que el resultado mejora. Pero antes de eso buscamos una configuración que inclusive mejore:
+
+\begin{itemize}
+\item \textbf{Temperatura:} 20000
+\item \textbf{Lote: } 7000
+\item \textbf{$\phi$: } 0.95
+\item \textbf{Algoritmo temperatura Lote: } 3500
+\item \textbf{Algoritmo temperatura porcentaje: } 0.60
+\end{itemize}
+
+De esta manera obtenemos lo siguiente:
+
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{../svgs/150_documentable_semilla_118.pdf}
+    \captionof{figure}{Grafica correspondiente a la octava configuracion para 150 ciudades}
+\end{center}
+
+Siendo que la mejor solución obtenida en este caso es $0.14002260979550915$ con la semilla 118. Pero al realizar mas intentos haciendo uso de distintas semillas, es que he podido llegar a $0.13779347989236584$ con la semilla -182984. 
+
+De esta manera obtenemos lo siguiente:
+
+\begin{center}
+  \includegraphics[width=0.4\textwidth]{../svgs/Mejor_150_semilla_-182984.pdf}
+  \captionof{figure}{Grafica correspondiente a la novena configuracion para 150 ciudades}
+\end{center}
+
+Finalmente es que podemos llegar a la mejor solución que he encontrado hasta el momento, la cual es $0.13667417380708738$ de la semilla -244383  
+
+\begin{center}
+  \includegraphics[width=0.4\textwidth]{../svgs/Mejor_150_semilla_-244383.pdf}
+  \captionof{figure}{Grafica correspondiente a la novena configuracion para 150 ciudades}
+\end{center}
+
 
 \section{Conclusión y Trabajos Futuros}
 
-Esta sección debe explicitar las limitaciones del trabajo presentado y establecer una discusión sobre los resultados o conclusiones presentadas. Se debe realizar un análisis de los aportes del trabajo frente a otros anteriores si los hubiera. Además, se deben establecer cuestiones abiertas y probables líneas adicionales en el marco de los resultados obtenidos. Los trabajos futuros se deben relacionar con la superación de las limitaciones del trabajo presentado. Muchas veces es, junto con el título, la parte más leída y por lo tanto debe ser de fácil comprensión. (Times New Roman, 12).
+De esta manera es que podemos mostrar la mejor solución encontrada, la cual después de nuestras configuraciones y ejecuciones con distintas semillas es que podemos ver que nuestro mejor resultado está dado por $0.13667417380708738$. Notando a lo largo del desarrollo y de los resultados es que podemos encontrarnos la importancia de la temperatura optima dada la semnilla a evaluar.
 
-\section{Referencias}
+Mientras que a mayor lotes es más facil obtener buenos resultados, pero es dificil profundizar en esos valores debido a que termina saltando de un lado a otro contantemente el algoritmo. Por otro lado a lotes demasiado pequeños no explora lo suficiente y no alcanza a profundizar con suficiente eficiencia.
 
-Documentación y bibliografía utilizada. Todas las publicaciones citadas deberán incluirse en la lista de referencias. La numeración será secuencial y estará entre corchetes: [1]. Será escrita en fuente (Times New Roman, 10)
+Inclusive al realizar una buena implementación del algoritmo y una buena configuración que consiga buenos resultados, los mejores resultados es como encontrar una aguja en un pajar, debido a que incluso los resultados que bajan de $.14$ son resultados bastante ocasionales, mientras que los que rompan ese limite cada vez con mejores resultados son inclusive más imposibles de obtener.
+
+Por lo que es importante elegir un correcto numero de lotes, una temperatura que se adecue a esa cantidad de lotes esto debido a que esta muy relacionados el tamaño de lote con la temperatura que usa la heuristica. Finalmente a mayor $\phi$ es que podemos dar mayor oportunidad de profundizar los resultados.
+
+Concluyendo de esta manera que nuestra mejor configuración alcanzada está dada por:
+
+\begin{itemize}
+\item \textbf{Temperatura:} 20000
+\item \textbf{Lote: } 7000
+\item \textbf{$\phi$: } 0.95
+\item \textbf{Algoritmo temperatura Lote: } 3500
+\item \textbf{Algoritmo temperatura porcentaje: } 0.60
+\end{itemize}
+
+y la mejor solución alcanzada esta dada por $0.13667417380708738$ y la cual es la siguiente [171, 652, 1075, 483, 512, 821, 75, 346, 183, 179, 671, 16, 520, 186, 675, 340, 502, 1038, 12, 828, 151, 339, 826, 444, 17, 25, 492, 491, 499, 347, 817, 489, 4, 174, 165, 3, 333, 27, 353, 990, 981, 988, 23, 176, 668, 352, 978, 5, 6, 1004, 351, 991, 185, 22, 213, 676, 163, 172, 182, 496, 19, 839, 815, 184, 667, 656, 507, 7, 823, 678, 816, 187, 982, 14, 181, 332, 345, 820, 26, 654, 490, 653, 344, 665, 673, 173, 2, 9, 1, 829, 661, 832, 663, 657, 508, 986, 505, 168, 329, 509, 493, 979, 837, 995, 984, 501, 164, 11, 1003, 349, 331, 662, 8, 999, 334, 674, 985, 343, 510, 660, 20, 825, 500, 504, 511, 327, 670, 350, 840, 336, 980, 297, 1001, 74, 822, 166, 658, 666, 818, 655, 819, 330, 1073, 169, 1037, 326, 328, 167, 495, 494]
+
+Mientras que para la de 40 instancias está dado por $0.3034413264907438$ donde la permutación es la siguiente: [1, 815, 653, 490, 654, 816, 2, 163, 329, 493, 979, 4, 165, 3, 981, 978, 817, 489, 492, 491, 164, 327, 980, 74, 166, 658, 666, 818, 655, 819, 330, 1073, 169, 1037, 814, 326, 328, 167, 495, 494] 
 
 \input{bibliography.tex}
-
-Tablas: Las Tablas serán numeradas en forma secuencial (Tabla 1, 2, 3, etc.,) con un titulo descriptivo, ambos escritos en Times New Roman, 10, cursiva. Las tablas estarán centradas en la columna o en caso contrario en toda la página. Los títulos de las columnas de la Tabla estarían en caracteres Times New Roman, 10 negrita.
-
-
-Figuras: Las figuras serán numeradas secuencialmente: Figura 1, 2, 3, etc.).
-Aquellas figuras que abarquen toda la página serán ubicadas al comienzo o al final de la página.
-
-
-Es preferible que los dibujos, fotos, diagramas, etc., se incluyan en blanco y negro. De esta manera, las impresiones monocromáticas, representarán fielmente el documento original.
 
 \end{multicols}
 
