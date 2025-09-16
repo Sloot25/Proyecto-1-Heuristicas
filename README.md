@@ -68,11 +68,11 @@ Donde los parametros dados dependen de la opción solicitada
 - Ejecutar el algoritmo para inteervalo de semillas
 
 ``` 
-    cargo run -r -- -o <archivo de ciudades> <semilla inicial> <semilla final> <nombre archivo salida>
+    cargo run -r -- -i <archivo de ciudades> <semilla inicial> <semilla final> <nombre archivo salida>
 ```
 
 - Ejecutar el algoritmo para una semilla con svg
 
 ``` 
-    cargo run -r -- -o <archivo de ciudades> <semilla inicial> <semilla final> <nombre archivo salida> -s
+    cargo run -r -- -i <archivo de ciudades> <semilla inicial> <semilla final> <nombre archivo salida> -s
 ```
