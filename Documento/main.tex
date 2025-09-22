@@ -316,6 +316,12 @@ y la mejor solución alcanzada esta dada por $0.13667417380708738$ y la cual es 
 
 Mientras que para la de 40 instancias está dado por $0.3034413264907438$ donde la permutación es la siguiente: [1, 815, 653, 490, 654, 816, 2, 163, 329, 493, 979, 4, 165, 3, 981, 978, 817, 489, 492, 491, 164, 327, 980, 74, 166, 658, 666, 818, 655, 819, 330, 1073, 169, 1037, 814, 326, 328, 167, 495, 494] 
 
+Pero estas han sido las soluciones que logre alcanzar haciendo el proceso antes descrito, el cálculo de la temperatura fue un cálculo geometrico, haciendo que en cada iteración unicamente conservará un porcentaje de la temperatura anterior.
+
+De la misma manera el Lote es una implementación estatica, es decir, en cada iteración del algoritmo, el lote se quedo fijo. Por lo que como trabajo a futuro se puede seguir manipulando el algoritmo usando las distintas formas de calcular la temperatura y el lote. Modificando la forma en la que estas son calculadas por una dinamica para los lotes dependiente de la situación en la que nos encontramos y una distinta pogresión de la temperatura, pudiendo ser la logaritmica u otra con un decremento más lento.
+
+Dado que aún no podemos asegurar que estas son las mejores soluciones, sobre todo para el lote de 150 dónde cada iteración con mayor numero de semillas arroja una solución que continúa variando con respecto de la anterior, solo queda hacer modificaciones pertinentes hasta poder encontrar una manera en la que, al igual que en la instancia de 40 ciudades este resultado logré ser mas persistente y no solo un resultado alcanzado por instancia única. 
+
 \input{bibliography.tex}
 
 \end{multicols}

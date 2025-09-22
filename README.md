@@ -26,6 +26,14 @@ Como en todo proyecto, las dependencias utilizadas pueden encontrarse en Cargo.t
 
 El Documento del proyecto se encuentra dentro de la carpeta Documento, el cual es un LaTex y se encuentra compilado en primera instancia a un pdf. 
 
+# Documentación
+
+Como es normal en Rust, puedes ver la documentación formateada para Rust ejecutando:
+
+```
+    cargo doc --open
+```
+
 ## Ejecucion
 
 El proyecto se ejecuta con 
