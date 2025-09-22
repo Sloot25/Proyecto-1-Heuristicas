@@ -23,9 +23,18 @@ El trabajo actual consiste en la implementación del recocido simulado para apro
 
 El problema del agente viajero o TSP es un problema que consiste en dado un conjunto de ciudades en un mapa. ¿Cuál es el camino más corto que pasa por todas las ciudades?. Para fines de este trabajo es que buscaremos acotar el problema de tal manera que dado un conjunto de ciudades en un mapa, buscamos la trayectoria más corta que pasa por todas ellas.
 
+Una definición equivalente de TSP puede ser expresada como un programa de entero. La primera definición de este tipo fue formulada por Dantzig, está define:
+
 \section{Desarrollo}
 
-Para estre problema se hizo uso del recocido simulado, el recocido simulado busca emular la técnica metalúrgica de recocido que se utiliza para reducir los defectos en metales. Este algoritmo utiliza un connjunto de posibles soluciones de un problema NP-duro, en el cual puedes usar una función objetivo, una función la cual se encargará de evaluar a la solución.
+Para estre problema se hizo uso del recocido simulado, el recocido simulado es una tecnica probabilistica propuesta en 1983 por Kirkpatrick y en 1985 por Cerny. busca emular la técnica metalúrgica de recocido que se utiliza para reducir los defectos en metales. Este algoritmo utiliza un connjunto de posibles soluciones de un problema NP-duro, en el cual puedes usar una función objetivo, una función la cual se encargará de evaluar a la solución.
+
+La idea central es encontrar un minimo global de una función objetivo especifica, intentando evitar los minimos locales en el proceso de búsqueda. Debido a su baja complejidad, este puede ser usado en mucha variedad de problemas de optimización, no solo en TSP. Un ejemplo de su funcionamiento es mostrado en la siguiente imagen:
+
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{EjemploRS.png}
+    \captionof{figure}{Grafica correspondiente al procedimiento del comportamiento del recocido simulado}
+\end{center}
 
 En nuestro caso, buscamos una función objetivo la cual no solo se encargue de castigar a los caminos que no sean posibles dada nuestra gráfica, si no que buscamos ser capaces de comparar las ciudades que no se encuentran en el mapa, de tal forma que lo que esperamos es que incluso con aquellos recorridos que no sean posibles bajo nuestra gráfica poder notar que la solución esta mejorando, inclusive encontrando menos conexiones inexistentes.
 
